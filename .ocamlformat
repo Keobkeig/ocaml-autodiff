@@ -1,0 +1,9 @@
+# OCaml Project Configuration
+profile = default
+margin = 80
+parse-docstrings = true
+wrap-comments = true
+let-binding-spacing = compact
+field-space = loose
+sequence-style = separator
+if-then-else = compact
