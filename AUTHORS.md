@@ -2,7 +2,7 @@
 
 ## Team Name
 
-Team <NN> OCaml Autodiff
+Team 76: The Artificer Raccoons
 
 ## Team Members
 
@@ -13,13 +13,13 @@ Team <NN> OCaml Autodiff
 
 ## Project Mentor (PM)
 
-- Name: <PM Name>
-- NetID: <PM NetID>
+- Name: Michelle Zhao
+- NetID: mz625
 
 ## Project Grader (PG)
 
-- Name: <PG Name>
-- NetID: <PG NetID>
+- Name: Cheryl Lam
+- NetID: cwl92
 
 ## Citations
 

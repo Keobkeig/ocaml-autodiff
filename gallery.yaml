@@ -10,14 +10,14 @@ group:
     netid: cb954
 
 pm:
-  name: <PM Name>
-  netid: <PM NetID>
+  name: Michelle Zhao
+  netid: mz625
 
 publish: true
 
 title: "OCaml Autodiff"
 
-git-repo: "https://github.com/<org-or-user>/<repo-name>"
+git-repo: "https://github.com/Keobkeig/ocaml-autodiff.git"
 
 demo-video-url: "https://www.youtube.com/watch?v=<video-id>"
 
