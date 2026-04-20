@@ -1,0 +1,29 @@
+---
+group:
+  - name: Richie Xue
+    netid: rx77
+  - name: Eric Chen
+    netid: ec936
+  - name: Jayden Lim
+    netid: jcl399
+  - name: Colby Bittner
+    netid: cb954
+
+pm:
+  name: <PM Name>
+  netid: <PM NetID>
+
+publish: true
+
+title: "OCaml Autodiff"
+
+git-repo: "https://github.com/<org-or-user>/<repo-name>"
+
+demo-video-url: "https://www.youtube.com/watch?v=<video-id>"
+
+desc: >
+  OCaml Autodiff is a from-scratch automatic differentiation engine in OCaml.
+  It parses mathematical expressions, evaluates them, and computes gradients
+  with reverse-mode autodiff. The system also includes a gradient-descent
+  training demo for a simple regression model, showing how autodiff powers
+  optimization workflows used in modern machine learning.
