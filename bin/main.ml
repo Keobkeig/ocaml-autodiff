@@ -2,6 +2,7 @@ let usage_lines =
   [
     "Usage:";
     "  ocaml-autodiff diff \"<expr>\" \"x=1,y=2\"";
+    "  ocaml-autodiff forward-diff \"<expr>\" \"x=1,y=2\"";
     "  ocaml-autodiff train [epochs] [learning_rate]";
     "  ocaml-autodiff check-grad \"<expr>\" \"x=1\" x [eps] [abs_tol]";
     "  ocaml-autodiff export-dot \"<expr>\" [path.dot]";
@@ -9,6 +10,7 @@ let usage_lines =
     "";
     "Examples:";
     "  ocaml-autodiff diff \"x*x + 3*x + 1\" \"x=2\"";
+    "  ocaml-autodiff forward-diff \"x*x + 3*x + 1\" \"x=2\"";
     "  ocaml-autodiff train 300 0.05";
     "  ocaml-autodiff check-grad \"x*x\" \"x=2\" x 1e-6 1e-4";
     "  ocaml-autodiff export-dot \"x*x + 1\" expr.dot";
@@ -90,6 +92,29 @@ let run_diff expr_text env_text =
                 (Ocaml_autodiff.Expr.to_string expr) ;
               Printf.printf "Value: %.8f\n" value ;
               print_endline "Gradients:" ;
+              print_gradients gradients ;
+              0))
+
+let run_forward_diff expr_text env_text =
+  match Ocaml_autodiff.Expr.parse expr_text with
+  | Error message ->
+      prerr_endline ("Parse error: " ^ message) ;
+      1
+  | Ok expr -> (
+      match parse_env env_text with
+      | Error message ->
+          prerr_endline ("Environment error: " ^ message) ;
+          1
+      | Ok env -> (
+          match Ocaml_autodiff.Forward_ad.gradient_expr expr env with
+          | Error message ->
+              prerr_endline ("Autodiff error: " ^ message) ;
+              1
+          | Ok (value, gradients) ->
+              Printf.printf "Expression: %s\n"
+                (Ocaml_autodiff.Expr.to_string expr) ;
+              Printf.printf "Value: %.8f\n" value ;
+              print_endline "Gradients (Forward-Mode):" ;
               print_gradients gradients ;
               0))
 
@@ -213,6 +238,12 @@ let run_command argv =
         print_usage () ;
         1)
       else run_diff argv.(2) argv.(3)
+    else if command = "forward-diff" then
+      if Array.length argv <> 4 then (
+        prerr_endline "forward-diff command expects exactly 2 arguments" ;
+        print_usage () ;
+        1)
+      else run_forward_diff argv.(2) argv.(3)
     else if command = "train" then
       let args =
         if Array.length argv <= 2 then []
