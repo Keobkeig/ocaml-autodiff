@@ -53,6 +53,60 @@ let derivative_univariate f x =
   let output = f (variable x) in
   output.tangent
 
-let gradient_expr _expr _env =
-  Error
-    "forward-mode expression gradient is not implemented yet; see Sprint-B TODO"
+let rec eval_dual expr env =
+  match expr with
+  | Expr.Const c -> constant c
+  | Expr.Var v -> (
+      try List.assoc v env
+      with Not_found -> failwith ("missing variable assignment for " ^ v))
+  | Expr.Add (e1, e2) ->
+      let d1 = eval_dual e1 env in
+      let d2 = eval_dual e2 env in
+      add d1 d2
+  | Expr.Sub (e1, e2) ->
+      let d1 = eval_dual e1 env in
+      let d2 = eval_dual e2 env in
+      sub d1 d2
+  | Expr.Mul (e1, e2) ->
+      let d1 = eval_dual e1 env in
+      let d2 = eval_dual e2 env in
+      mul d1 d2
+  | Expr.Div (e1, e2) ->
+      let d1 = eval_dual e1 env in
+      let d2 = eval_dual e2 env in
+      div d1 d2
+  | Expr.Neg e -> neg (eval_dual e env)
+  | Expr.Exp e -> exp (eval_dual e env)
+  | Expr.Log e -> log (eval_dual e env)
+  | Expr.Sin e -> sin (eval_dual e env)
+  | Expr.Cos e -> cos (eval_dual e env)
+  | Expr.Tanh e -> tanh (eval_dual e env)
+
+let gradient_expr expr env =
+  let vars = Expr.vars expr in
+  try
+    let primal =
+      let base_env =
+        List.map (fun (name, value) -> (name, constant value)) env
+      in
+      value (eval_dual expr base_env)
+    in
+    let grads =
+      List.map
+        (fun var ->
+          let dual_env =
+            List.map
+              (fun (name, v) ->
+                if name = var then (name, variable v) else (name, constant v))
+              env
+          in
+          let output = eval_dual expr dual_env in
+          (var, derivative output))
+        vars
+    in
+    Ok (primal, grads)
+  with Failure msg ->
+    if msg = "division by zero in forward_ad.div" then Error "division by zero"
+    else if msg = "log domain error in forward_ad.log" then
+      Error "log undefined for non-positive input"
+    else Error msg
