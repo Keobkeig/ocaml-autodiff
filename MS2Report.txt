@@ -1,0 +1,42 @@
+# MS2 Progress Report: ocaml-autodiff
+
+**Team:** Richie Xue (rx77), Colby Bittner (cb954), Jayden Lim (jcl399), Eric Chen (ec_936)
+**Date:** April 28, 2026
+
+## Vision
+
+Our vision is to build a robust, idiomatic OCaml library for automatic differentiation (autodiff) that supports both reverse-mode and forward-mode techniques. Since MS1, we have sharpened our focus toward providing a developer-friendly CLI for rapid prototyping of differentiable expressions and a baseline training engine for simple machine learning models (e.g., linear regression). We aim to provide clear visualizations of computation graphs and verified gradient accuracy through numerical checking, making the library useful for both educational purposes and small-scale optimization tasks.
+
+## Summary of Progress
+
+Between MS1 and MS2, our team successfully transitioned from a design pitch to a working prototype with a functional command-line interface. We implemented the core expression AST, recursive-descent parsing, and two distinct differentiation engines: a reverse-mode engine (optimized for many parameters) and a forward-mode engine (using dual numbers). We also developed a training module that utilizes these gradients to solve linear regression problems via stochastic gradient descent (SGD). To ensure reliability, we implemented a numerical gradient checking utility and a Graphviz export feature for visualizing expression trees. Our system now successfully builds with Dune, passes a baseline suite of unit tests, and generates code coverage reports.
+
+## Activity Breakdown
+
+### Richie Xue (rx77)
+*   **Responsibilities:** Project architecture, parsing, CLI development, and reverse-mode engine.
+*   **Activities:** Designed the expression AST and parser; implemented the reverse-mode AD engine; developed the main CLI entry point and training loop; configured Dune, Bisect coverage, and project documentation.
+*   **Features Delivered:** `Expr` module, `Reverse_ad` module, `Trainer` SGD loop, CLI scaffolding.
+*   **Hours Spent:** 18 hours.
+
+### Jayden Lim (jcl399)
+*   **Responsibilities:** Forward-mode differentiation and CLI integration.
+*   **Activities:** Implemented dual-number arithmetic and the recursive forward-mode differentiation engine; integrated the `forward-diff` command into the CLI; added unit tests for forward-mode accuracy.
+*   **Features Delivered:** `Forward_ad` module, dual-number evaluation logic.
+*   **Hours Spent:** 12 hours.
+
+### Colby Bittner (cb954)
+*   **Responsibilities:** Verification and numerical stability.
+*   **Activities:** Developed the numerical gradient checker to validate AD results against finite difference approximations; authored comprehensive test suites for `grad_check`; documented design decisions from team check-ins.
+*   **Features Delivered:** `Grad_check` module, extensive test coverage for gradient verification.
+*   **Hours Spent:** 14 hours.
+
+### Eric Chen (ec_936)
+*   **Responsibilities:** Visualization and export utilities.
+*   **Activities:** Implemented the Graphviz DOT export functionality to allow users to visualize computation graphs; developed helper functions for traversing the expression AST for export.
+*   **Features Delivered:** `Graphviz_export` module, `export-dot` CLI command.
+*   **Hours Spent:** 10 hours.
+
+## Productivity Analysis
+
+As a team, we have been highly productive, meeting almost all of our planned goals for the MS2 milestone. Our decision to prioritize the core AD engines and CLI early allowed us to have a "running demo" well before the deadline. Our initial estimates for the difficulty of reverse-mode AD were slightly low, requiring more coordination on AST design than expected, but we compensated by parallelizing the forward-mode and visualization tasks. We successfully avoided major merge conflicts by maintaining a clear separation of concerns between modules. For the next milestone, we plan to refine our numerical stability and expand our training capabilities (e.g., Adam optimizer), having learned that modular testing of individual AD passes is critical for maintaining velocity.
