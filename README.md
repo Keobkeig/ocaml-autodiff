@@ -1,65 +1,84 @@
 # OCaml Autodiff
 
+An efficient and extensible automatic differentiation library for OCaml, supporting both reverse and forward mode AD.
+
 ## Team Members
 
-- [Richie Xue] ([rx77])
-- [Eric Chen] ([ec936])
-- [Jayden Lim ] ([jcl399])
-- [Colby Bittner] ([cb954])
+- Richie Xue (rx77)
+- Eric Chen (ec936)
+- Jayden Lim (jcl399)
+- Colby Bittner (cb954)
 
-## Project Description
+## Project Features (MS2 WIP)
 
-Autodiff engine prototype in OCaml for CS 3110.
-
-Sprint A delivers:
-- Scalar reverse-mode automatic differentiation for expression trees.
-- Expression parser for arithmetic and selected math functions.
-- CLI command to evaluate expressions and gradients.
-- Gradient-descent training demo for a linear regression model.
+- **Reverse-Mode AD:** Optimized for expressions with many parameters.
+- **Forward-Mode AD:** Implemented via dual numbers for specific partial derivatives.
+- **Expression Parsing:** Robust recursive-descent parser for arithmetic (`+`, `-`, `*`, `/`, `^`) and functions (`exp`, `ln`, `sin`, `cos`).
+- **Gradient Checker:** Numerical verification suite to ensure AD accuracy.
+- **Visualization:** Export expression computation graphs to Graphviz DOT format.
+- **ML Training Engine:** Stochastic Gradient Descent (SGD) and Adam optimizer prototypes for linear models.
 
 ## Setup Instructions
 
+Clone the repository:
 ```bash
-cd 3110-final-project
+git clone https://github.com/Keobkeig/ocaml-autodiff.git
+cd ocaml-autodiff
+```
+
+Build the project:
+```bash
 dune build
 ```
 
-## Build and Run
+## Usage
 
-```bash
-dune exec bin/main.exe -- help
-```
+Use the CLI to differentiate expressions, train models, or export visualizations.
 
-You can also run the installed public executable name:
-
-```bash
-dune exec ocaml-autodiff -- help
-```
-
-### Differentiate an expression
-
+### 1. Differentiate (Reverse Mode)
 ```bash
 dune exec bin/main.exe -- diff "x*x + 3*x + 1" "x=2"
 ```
 
-### Run training demo
+### 2. Differentiate (Forward Mode)
+```bash
+dune exec bin/main.exe -- forward-diff "x*y + exp(x)" "x=1,y=2"
+```
 
+### 3. Run Training Demo
 ```bash
 dune exec bin/main.exe -- train 300 0.05
 ```
 
-## Testing
+### 4. Export Visualization
+```bash
+dune exec bin/main.exe -- export-dot "x*x + sin(x)" expr.dot
+# Render with: dot -Tpng expr.dot -o expr.png
+```
 
+### 5. Check Gradients
+```bash
+dune exec bin/main.exe -- check-grad "x*x" "x=2" x
+```
+
+## Testing & Coverage
+
+Run the test suite:
 ```bash
 dune test
 ```
 
+Generate coverage report (requires `bisect_ppx`):
+```bash
+dune runtest --instrument-with bisect_ppx --force
+bisect-ppx-report html
+```
+
 ## MS2 Submission Files
 
-The repository includes draft/required MS2 artifacts:
+- `INSTALL.md`: Detailed installation and environment setup.
+- `AUTHORS.md`: Project contributors and citations.
+- `gallery.yaml`: Project gallery metadata and demo link.
+- `RepoURL.txt`: Official repository URL.
+- `MS2Report.txt`: Progress report (to be converted to PDF).
 
-- `INSTALL.md`
-- `AUTHORS.md`
-- `gallery.yaml`
-- `MS2Report.md` (export to `MS2Report.pdf` for submission)
-- `RepoURL.txt`
