@@ -50,10 +50,12 @@ dune exec bin/main.exe -- forward-diff "x*y + exp(x)" "x=1,y=2"
 dune exec bin/main.exe -- train 300 0.05
 ```
 
-### 4. Export Visualization
+### 4. Export Visualization (requires 'graphviz')
 ```bash
 dune exec bin/main.exe -- export-dot "x*x + sin(x)" expr.dot
-# Render with: dot -Tpng expr.dot -o expr.png
+dot -Tpng -Gdpi=600 expr.dot -o output.png
+# We recommend dpi higher than 300 for best results.
+# Alternatively: dot -Tsvg  expr.dot -o output.svg
 ```
 
 ### 5. Check Gradients

@@ -19,15 +19,15 @@ let rec expected_edges = function
 
 let test_constant _ =
   let dot = expr_to_dot (Const 1.) in
-  assert_equal 1 (count_occurrences dot "1.")
+  assert_equal 1 (count_occurrences dot "label=\"1.\"")
 
 let test_var _ =
   let dot = expr_to_dot (Var "x") in
-  assert_equal 1 (count_occurrences dot "\"x\"")
+  assert_equal 1 (count_occurrences dot "label=\"x\"")
 
 let test_var_shared _ =
   let dot = expr_to_dot (Add (Var "x", Var "x")) in
-  assert_equal 1 (count_occurrences dot "\"x\"")
+  assert_equal 1 (count_occurrences dot "label=\"x\"")
 
 let test_unary_edges _ =
   let ast = Log (Neg (Var "x")) in
@@ -44,11 +44,13 @@ let test_edges _ =
   let dot = expr_to_dot ast in
   assert_equal (expected_edges ast) (count_occurrences dot "->")
 
-(* let test_operator_labels _ = let dot = expr_to_dot (Add (Var "x", Var "y"))
-   in assert_equal 1 (count_occurrences dot "\"+\"") *)
+let test_operator_labels _ =
+  let dot = expr_to_dot (Add (Var "x", Var "y")) in
+  assert_equal 1 (count_occurrences dot "label=\"+\"")
 
-(* let test_multiple_op_labels _ = let dot = expr_to_dot (Add (Var "x", Add (Var
-   "y", Var "z"))) in assert_equal 2 (count_occurrences dot "\"+\"") *)
+let test_multiple_op_labels _ =
+  let dot = expr_to_dot (Add (Var "x", Add (Var "y", Var "z"))) in
+  assert_equal 2 (count_occurrences dot "label=\"+\"")
 
 let test_write_expr_dot _ =
   let path = Filename.temp_file "test_dot" ".dot" in
@@ -62,6 +64,11 @@ let test_write_expr_dot _ =
 
   Sys.remove path
 
+let test_write_expr_dot_error _ =
+  let result = write_expr_dot "/nonexistent/path/file.dot" (Var "x") in
+  assert_bool "should be wrapped in Error, not propagated Sys_error"
+    (match result with Error _ -> true | Ok _ -> false)
+
 let suite =
   "graphviz_export property tests"
   >::: [
@@ -71,7 +78,10 @@ let suite =
          "unary op edges" >:: test_unary_edges;
          "binary op edges" >:: test_binary_edges;
          "unary and binary edges" >:: test_edges;
+         "operator labels" >:: test_operator_labels;
+         "multiple op labels" >:: test_multiple_op_labels;
          "writing dot file" >:: test_write_expr_dot;
+         "writing dot error" >:: test_write_expr_dot_error;
        ]
 
 let () = run_test_tt_main suite
