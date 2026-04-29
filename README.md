@@ -55,7 +55,9 @@ dune exec bin/main.exe -- train 300 0.05
 dune exec bin/main.exe -- export-dot "x*x + sin(x)" expr.dot
 dot -Tpng -Gdpi=600 expr.dot -o output.png
 # We recommend dpi higher than 300 for best results.
-# Alternatively: dot -Tsvg  expr.dot -o output.svg
+
+# Saving as .svg: 
+dot -Tsvg  expr.dot -o output.svg
 ```
 
 ### 5. Check Gradients
