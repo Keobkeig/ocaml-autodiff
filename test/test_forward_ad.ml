@@ -105,6 +105,11 @@ let gradient_expr_test_const _ =
   let result = Forward_ad.gradient_expr expr [] in
   assert_result_ok_gradient result 5.0 []
 
+let derivative_univariate_test _ =
+  let f x = Forward_ad.mul x x in
+  let result = Forward_ad.derivative_univariate f 3.0 in
+  assert_float_equal 6.0 result
+
 let suite =
   "forward_ad tests"
   >::: [
@@ -117,6 +122,7 @@ let suite =
          "gradient log domain error" >:: gradient_expr_test_log_domain_error;
          "gradient missing var error" >:: gradient_expr_test_missing_var_error;
          "gradient division by zero" >:: gradient_expr_test_division_by_zero;
+         "derivative univariate" >:: derivative_univariate_test;
        ]
 
 let () = run_test_tt_main suite
