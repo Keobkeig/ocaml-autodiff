@@ -91,8 +91,74 @@ let demo_samples =
 
 let default_model = { w = 0.0; b = 0.0 }
 
-let train_linear_adam ~epochs:_ ~config:_ _init_model _samples =
-  Error "train_linear_adam is not implemented yet; see Sprint-B TODO"
+let adam_step ~config ~t ~grad ~m ~v ~param =
+  let m' = (config.beta1 *. m) +. ((1.0 -. config.beta1) *. grad) in
+  let v' = (config.beta2 *. v) +. ((1.0 -. config.beta2) *. grad *. grad) in
+  let bc1 = 1.0 -. (config.beta1 ** float_of_int t) in
+  let bc2 = 1.0 -. (config.beta2 ** float_of_int t) in
+  let m_hat = m' /. bc1 in
+  let v_hat = v' /. bc2 in
+  let param' =
+    param -. (config.learning_rate *. m_hat /. (sqrt v_hat +. config.epsilon))
+  in
+  (param', m', v')
 
-let load_csv_samples _path =
-  Error "load_csv_samples is not implemented yet; see Sprint-B TODO"
+let rec train_adam_epochs epochs config samples model m_w v_w m_b v_b t history
+    =
+  if epochs <= 0 then Ok (model, List.rev history)
+  else
+    match accumulate_sample_grads model samples 0.0 0.0 0 with
+    | Error message -> Error message
+    | Ok (avg_grad_w, avg_grad_b) ->
+        let new_w, m_w', v_w' =
+          adam_step ~config ~t ~grad:avg_grad_w ~m:m_w ~v:v_w ~param:model.w
+        in
+        let new_b, m_b', v_b' =
+          adam_step ~config ~t ~grad:avg_grad_b ~m:m_b ~v:v_b ~param:model.b
+        in
+        let updated_model = { w = new_w; b = new_b } in
+        let loss = mse_loss updated_model samples in
+        train_adam_epochs (epochs - 1) config samples updated_model m_w' v_w'
+          m_b' v_b' (t + 1) (loss :: history)
+
+let train_linear_adam ~epochs ~config init_model samples =
+  if epochs < 0 then Error "epochs must be non-negative"
+  else if config.learning_rate <= 0.0 then
+    Error "learning_rate must be positive"
+  else if config.beta1 <= 0.0 || config.beta1 >= 1.0 then
+    Error "beta1 must be in (0, 1)"
+  else if config.beta2 <= 0.0 || config.beta2 >= 1.0 then
+    Error "beta2 must be in (0, 1)"
+  else if config.epsilon <= 0.0 then Error "epsilon must be positive"
+  else train_adam_epochs epochs config samples init_model 0.0 0.0 0.0 0.0 1 []
+
+let parse_csv_line line =
+  match String.split_on_char ',' line with
+  | [ x_text; y_text ] -> (
+      let x_trim = String.trim x_text in
+      let y_trim = String.trim y_text in
+      try Ok { x = float_of_string x_trim; y = float_of_string y_trim }
+      with Failure _ -> Error ("invalid number in line: " ^ line))
+  | _ -> Error ("expected two columns (x,y) in line: " ^ line)
+
+let rec read_csv_lines channel acc =
+  match try Some (input_line channel) with End_of_file -> None with
+  | None -> Ok (List.rev acc)
+  | Some line -> (
+      let trimmed = String.trim line in
+      if trimmed = "" then read_csv_lines channel acc
+      else
+        match parse_csv_line trimmed with
+        | Error message -> Error message
+        | Ok sample -> read_csv_lines channel (sample :: acc))
+
+let load_csv_samples path =
+  match try Ok (open_in path) with Sys_error message -> Error message with
+  | Error message -> Error message
+  | Ok channel -> (
+      let result = read_csv_lines channel [] in
+      close_in channel ;
+      match result with
+      | Error message -> Error message
+      | Ok [] -> Error "csv file contains no samples"
+      | Ok samples -> Ok samples)

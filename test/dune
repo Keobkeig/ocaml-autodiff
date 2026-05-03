@@ -13,6 +13,13 @@
 (test
  (name test_graphviz_export)
  (libraries ocaml_autodiff ounit2))
+
 (test
  (name test_expr)
  (libraries ocaml_autodiff ounit2))
+
+(test
+ (name test_trainer)
+ (libraries ocaml_autodiff ounit2)
+ (deps
+  (source_tree ../data)))

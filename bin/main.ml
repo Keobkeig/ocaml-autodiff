@@ -3,15 +3,18 @@ let usage_lines =
     "Usage:";
     "  ocaml-autodiff diff \"<expr>\" \"x=1,y=2\"";
     "  ocaml-autodiff forward-diff \"<expr>\" \"x=1,y=2\"";
-    "  ocaml-autodiff train [epochs] [learning_rate]";
+    "  ocaml-autodiff train [epochs] [learning_rate] [csv_path]";
     "  ocaml-autodiff check-grad \"<expr>\" \"x=1\" x [eps] [abs_tol]";
     "  ocaml-autodiff export-dot \"<expr>\" [path.dot]";
-    "  ocaml-autodiff train-adam [epochs]";
+    "  ocaml-autodiff train-adam [epochs] [csv_path]";
     "";
     "Examples:";
     "  ocaml-autodiff diff \"x*x + 3*x + 1\" \"x=2\"";
     "  ocaml-autodiff forward-diff \"x*x + 3*x + 1\" \"x=2\"";
     "  ocaml-autodiff train 300 0.05";
+    "  ocaml-autodiff train 300 0.05 data.csv";
+    "  ocaml-autodiff train-adam 1000";
+    "  ocaml-autodiff train-adam 1000 data.csv";
     "  ocaml-autodiff check-grad \"x*x\" \"x=2\" x 1e-6 1e-4";
     "  ocaml-autodiff export-dot \"x*x + 1\" expr.dot";
   ]
@@ -128,6 +131,13 @@ let maybe_head list default =
 let second_or_default list default =
   match list with _first :: second :: _ -> second | _ -> default
 
+let third_or_default list default =
+  match list with _ :: _ :: third :: _ -> third | _ -> default
+
+let load_samples csv_path =
+  if csv_path = "" then Ok Ocaml_autodiff.Trainer.demo_samples
+  else Ocaml_autodiff.Trainer.load_csv_samples csv_path
+
 let last_or_default list default =
   let rec loop items current =
     match items with [] -> current | value :: rest -> loop rest value
@@ -137,36 +147,46 @@ let last_or_default list default =
 let run_train args =
   let epochs_text = maybe_head args "200" in
   let lr_text = second_or_default args "0.05" in
+  let csv_path = third_or_default args "" in
   match parse_int epochs_text with
   | Error message ->
-      prerr_endline ("Train argument error: " ^ message) ;
+      prerr_endline ("Train argument error: invalid epochs " ^ message) ;
+      prerr_endline "Usage: train [epochs] [learning_rate] [csv_path]" ;
       1
   | Ok epochs -> (
       match parse_float_value lr_text with
-      | Error message ->
-          prerr_endline ("Train argument error: " ^ message) ;
+      | Error _ ->
+          Printf.eprintf
+            "Train argument error: invalid learning_rate %S (expected a \
+             positive float)\n"
+            lr_text ;
+          prerr_endline "Usage: train [epochs] [learning_rate] [csv_path]" ;
           1
       | Ok learning_rate -> (
-          let initial_loss =
-            Ocaml_autodiff.Trainer.mse_loss Ocaml_autodiff.Trainer.default_model
-              Ocaml_autodiff.Trainer.demo_samples
-          in
-          match
-            Ocaml_autodiff.Trainer.train_linear ~epochs ~learning_rate
-              Ocaml_autodiff.Trainer.default_model
-              Ocaml_autodiff.Trainer.demo_samples
-          with
+          match load_samples csv_path with
           | Error message ->
-              prerr_endline ("Training error: " ^ message) ;
+              prerr_endline ("CSV error: " ^ message) ;
               1
-          | Ok (model, history) ->
-              let final_loss = last_or_default history initial_loss in
-              Printf.printf "Training completed in %d epochs\n" epochs ;
-              Printf.printf "Initial loss: %.8f\n" initial_loss ;
-              Printf.printf "Final loss:   %.8f\n" final_loss ;
-              Printf.printf "Learned model: y = %.8f * x + %.8f\n" model.w
-                model.b ;
-              0))
+          | Ok samples -> (
+              let initial_loss =
+                Ocaml_autodiff.Trainer.mse_loss
+                  Ocaml_autodiff.Trainer.default_model samples
+              in
+              match
+                Ocaml_autodiff.Trainer.train_linear ~epochs ~learning_rate
+                  Ocaml_autodiff.Trainer.default_model samples
+              with
+              | Error message ->
+                  prerr_endline ("Training error: " ^ message) ;
+                  1
+              | Ok (model, history) ->
+                  let final_loss = last_or_default history initial_loss in
+                  Printf.printf "Training completed in %d epochs\n" epochs ;
+                  Printf.printf "Initial loss: %.8f\n" initial_loss ;
+                  Printf.printf "Final loss:   %.8f\n" final_loss ;
+                  Printf.printf "Learned model: y = %.8f * x + %.8f\n" model.w
+                    model.b ;
+                  0)))
 
 let run_check_grad args =
   match args with
@@ -208,23 +228,37 @@ let run_export_dot args =
 
 let run_train_adam args =
   let epochs_text = maybe_head args "200" in
+  let csv_path = second_or_default args "" in
   match parse_int epochs_text with
   | Error message ->
       prerr_endline ("Train-adam argument error: " ^ message) ;
       1
   | Ok epochs -> (
-      match
-        Ocaml_autodiff.Trainer.train_linear_adam ~epochs
-          ~config:Ocaml_autodiff.Trainer.default_adam_config
-          Ocaml_autodiff.Trainer.default_model
-          Ocaml_autodiff.Trainer.demo_samples
-      with
+      match load_samples csv_path with
       | Error message ->
-          prerr_endline ("Training error: " ^ message) ;
+          prerr_endline ("CSV error: " ^ message) ;
           1
-      | Ok (_model, _history) ->
-          print_endline "train-adam completed" ;
-          0)
+      | Ok samples -> (
+          let initial_loss =
+            Ocaml_autodiff.Trainer.mse_loss Ocaml_autodiff.Trainer.default_model
+              samples
+          in
+          match
+            Ocaml_autodiff.Trainer.train_linear_adam ~epochs
+              ~config:Ocaml_autodiff.Trainer.default_adam_config
+              Ocaml_autodiff.Trainer.default_model samples
+          with
+          | Error message ->
+              prerr_endline ("Training error: " ^ message) ;
+              1
+          | Ok (model, history) ->
+              let final_loss = last_or_default history initial_loss in
+              Printf.printf "Training completed in %d epochs (Adam)\n" epochs ;
+              Printf.printf "Initial loss: %.8f\n" initial_loss ;
+              Printf.printf "Final loss:   %.8f\n" final_loss ;
+              Printf.printf "Learned model: y = %.8f * x + %.8f\n" model.w
+                model.b ;
+              0))
 
 let run_command argv =
   if Array.length argv < 2 then (

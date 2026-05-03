@@ -16,7 +16,7 @@ An efficient and extensible automatic differentiation library for OCaml, support
 - **Expression Parsing:** Robust recursive-descent parser for arithmetic (`+`, `-`, `*`, `/`, `^`) and functions (`exp`, `ln`, `sin`, `cos`).
 - **Gradient Checker:** Numerical verification suite to ensure AD accuracy.
 - **Visualization:** Export expression computation graphs to Graphviz DOT format.
-- **ML Training Engine:** Stochastic Gradient Descent (SGD) and Adam optimizer prototypes for linear models.
+- **ML Training Engine:** Stochastic Gradient Descent (SGD) and Adam optimizer for linear models.
 
 ## Setup Instructions
 
@@ -45,12 +45,24 @@ dune exec bin/main.exe -- diff "x*x + 3*x + 1" "x=2"
 dune exec bin/main.exe -- forward-diff "x*y + exp(x)" "x=1,y=2"
 ```
 
-### 3. Run Training Demo
+### 3. Run Training Demo (SGD)
 ```bash
 dune exec bin/main.exe -- train 300 0.05
+# Or with a custom dataset (CSV with two columns: x,y):
+dune exec bin/main.exe -- train 300 0.05 data/y_eq_2x_plus_1.csv
 ```
 
-### 4. Export Visualization (requires 'graphviz')
+### 4. Run Training Demo (Adam)
+```bash
+dune exec bin/main.exe -- train-adam 1000
+# Or with a custom dataset:
+dune exec bin/main.exe -- train-adam 5000 data/y_eq_3x_minus_2.csv
+```
+
+Sample datasets are bundled under [data/](data/). CSV format is one
+`x,y` pair per line; blank lines are ignored.
+
+### 5. Export Visualization (requires 'graphviz')
 ```bash
 dune exec bin/main.exe -- export-dot "x*x + sin(x)" expr.dot
 dot -Tpng -Gdpi=600 expr.dot -o output.png
@@ -60,7 +72,7 @@ dot -Tpng -Gdpi=600 expr.dot -o output.png
 dot -Tsvg  expr.dot -o output.svg
 ```
 
-### 5. Check Gradients
+### 6. Check Gradients
 ```bash
 dune exec bin/main.exe -- check-grad "x*x" "x=2" x
 ```

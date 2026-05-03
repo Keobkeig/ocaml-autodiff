@@ -84,9 +84,9 @@ let parse_success_coverage_test _ =
   | Ok (Neg (Const 1.)) -> ()
   | _ -> assert_failure "expected Neg") ;
 
-  (match parse "tanh(1)" with
+  match parse "tanh(1)" with
   | Ok (Tanh (Const 1.)) -> ()
-  | _ -> assert_failure "expected Tanh")
+  | _ -> assert_failure "expected Tanh"
 
 let suite =
   "expr tests"
@@ -96,7 +96,8 @@ let suite =
          "parse invalid number literal" >:: parse_invalid_number_test;
          "parse trailing token" >:: parse_trailing_token_test;
          "parse missing paren" >:: parse_missing_paren_test;
-         "parse unexpected token primary" >:: parse_unexpected_token_primary_test;
+         "parse unexpected token primary"
+         >:: parse_unexpected_token_primary_test;
          "parse error propagation" >:: parse_error_propagation_test;
          "parse token name coverage" >:: parse_token_name_coverage_test;
          "parse unary error" >:: parse_unary_error_test;
