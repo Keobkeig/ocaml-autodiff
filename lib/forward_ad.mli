@@ -40,5 +40,5 @@ val gradient_expr :
   Expr.t ->
   (string * float) list ->
   (float * (string * float) list, string) result
-(** [gradient_expr expr env] is a Sprint-B placeholder for a forward-mode
-    expression gradient API. Returns an error until implemented by the team. *)
+(** [gradient_expr expr env] computes the value and gradient of [expr] evaluated at
+    [env] using forward-mode automatic differentiation. *)

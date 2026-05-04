@@ -51,9 +51,9 @@ val train_linear_adam :
   model ->
   sample list ->
   (model * float list, string) result
-(** [train_linear_adam ~epochs ~config init samples] is a Sprint-B placeholder
-    for Adam-based training. Returns an error until implemented. *)
+(** [train_linear_adam ~epochs ~config init samples] trains [init] using the Adam
+    optimizer for [epochs]. Returns the optimized model and loss history. *)
 
 val load_csv_samples : string -> (sample list, string) result
-(** [load_csv_samples path] is a Sprint-B placeholder for loading regression
-    datasets from CSV files. Returns an error until implemented. *)
+(** [load_csv_samples path] loads a regression dataset from a CSV file at [path].
+    Returns the list of samples or an error if parsing fails. *)

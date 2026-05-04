@@ -15,6 +15,6 @@ val check_expr_gradient :
   float ->
   float ->
   (bool, string) result
-(** [check_expr_gradient expr env var_name eps abs_tol] is a Sprint-B
-    placeholder API for comparing reverse-mode gradients against numerical
-    finite differences. Returns an error until implemented by the team. *)
+(** [check_expr_gradient expr env var_name eps abs_tol] compares reverse-mode
+    gradients against numerical finite differences for [var_name]. Returns [true]
+    if the gradients match within [abs_tol], or an error on failure. *)
